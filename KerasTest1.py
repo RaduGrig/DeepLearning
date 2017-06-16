@@ -3,35 +3,74 @@
 Created on Fri Jun 16 22:19:57 2017
 
 @author: RaduGrig
+@inspiration: NikCleju
 """
-import keras
+
+# import stuff
+from keras.optimizers import RMSprop
 from keras.models import Sequential
-from keras.layers import Dense, Dropout, Activation
-from keras.optimizers import SGD
-
-# Generate dummy data
+from keras.layers import Dense, Activation
 import numpy as np
-x_train = [[0, 0], [0, 1], [1, 0], [1, 1]]
-y_train = [[0], [1], [1], [0]]
-x_test = [[0, 0], [0, 1], [1, 0], [1, 1]]
-y_test = [[0], [1], [1], [0]]
+import matplotlib.pyplot as plot 
 
-model = Sequential()
-# Dense(64) is a fully-connected layer with 64 hidden units.
-# in the first layer, you must specify the expected input data shape:
-# here, 20-dimensional vectors.
-model.add(Dense(4, input_dim=2))
-model.add(Activation('tanh'))
-model.add(Dense(1))
-model.add(Activation('tanh'))
+#Params
+DataPoints = 100;
+Noise = 0.1;
 
-sgd = SGD(lr=0.1, momentum=0.0, decay=0.0, nesterov=True)
-model.compile(loss='poisson',
-              optimizer=sgd,
-              metrics=['accuracy'])
+#create NN object
+Idiot = Sequential();
+#
+#Other models:
+#???To add
+#
 
-model.fit(x_train, y_train,
-          epochs=10,
-          batch_size=4)
-score = model.evaluate(x_test, y_test, batch_size=4)
-print(score)
+#stack NN layers(build NN)
+Idiot.add(Dense(2, input_dim=2));
+Idiot.add(Activation('sigmoid'));
+Idiot.add(Dense(1));
+Idiot.add(Activation('tanh'));
+Optimizer = RMSprop(lr=0.01)
+Idiot.compile(optimizer=Optimizer, loss="mse")
+
+#
+#Other activations:
+#https://keras.io/activations/
+#
+
+#Create training data
+Data00 = np.tile( np.array([0, 0]), (DataPoints, 1) ) + Noise * np.random.randn( DataPoints, 2 );
+Data01 = np.tile( np.array([0, 1]), (DataPoints, 1) ) + Noise * np.random.randn( DataPoints, 2 );
+Data10 = np.tile( np.array([1, 0]), (DataPoints, 1) ) + Noise * np.random.randn( DataPoints, 2 );
+Data11 = np.tile( np.array([1, 1]), (DataPoints, 1) ) + Noise * np.random.randn( DataPoints, 2 );
+
+Tests00 = np.tile( np.array([0, 0]), (DataPoints, 1) ) + Noise * np.random.randn( DataPoints, 2 );
+Tests01 = np.tile( np.array([0, 0]), (DataPoints, 1) ) + Noise * np.random.randn( DataPoints, 2 );
+Tests10 = np.tile( np.array([0, 0]), (DataPoints, 1) ) + Noise * np.random.randn( DataPoints, 2 );
+Tests11 = np.tile( np.array([0, 0]), (DataPoints, 1) ) + Noise * np.random.randn( DataPoints, 2 );
+
+Labels00 = np.zeros(( DataPoints, 1 ));
+Labels01 = np.ones(( DataPoints, 1 ));
+Labels10 = np.ones(( DataPoints, 1 ));
+Labels11 = np.zeros(( DataPoints, 1 ));
+
+TrainingSet = np.array( np.vstack((Data00, Data01, Data10, Data11)), dtype=np.float32)
+TestSet = np.array( np.vstack((Tests00, Tests01, Tests10, Tests11)), dtype=np.float32)
+Labels = np.vstack((Labels00, Labels01, Labels10, Labels11))
+
+#Plot training set
+plot.scatter(TrainingSet[:,0], TrainingSet[:,1], c=Labels)
+plot.show()
+
+#NikCleju's function for visualizing decission areas
+def plot_separating_curve(model):
+    points = np.array([(i, j) for i in np.linspace(0,1,100) for j in np.linspace(0,1,100)])
+    #outputs = net(Variable(torch.FloatTensor(points)))
+    outputs = model.predict(points)
+    outlabels = outputs > 0.5
+    plot.scatter(points[:,0], points[:,1], c=outlabels, alpha=0.5)
+    plot.title('Decision areas')
+    plot.show()
+
+     
+Idiot.fit(TrainingSet, Labels, epochs=200, batch_size=50)
+plot_separating_curve(Idiot)
