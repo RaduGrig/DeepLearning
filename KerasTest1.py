@@ -13,6 +13,7 @@ from keras.layers import Dense, Activation
 import numpy as np
 import matplotlib.pyplot as plot 
 
+
 #Params
 DataPoints = 100;
 Noise = 0.1;
