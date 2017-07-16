@@ -1,0 +1,4 @@
+Optimizer = Adam, default params
+2 layers: dense(4, 2 inputs) - softmax, dense(1) - linear
+Cost function = Mean Squared Error
+
